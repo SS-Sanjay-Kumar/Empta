@@ -1,17 +1,11 @@
 from fastapi import APIRouter
 
-from .endpoints import health, crud
+from .endpoints.product_routes import product_router
 
 api_v1_router = APIRouter()
 
 api_v1_router.include_router(
-    health.healthRouter,
-    prefix="/health",
-    tags=["Health"]
-)
-
-api_v1_router.include_router(
-    crud.crudRouter,
-    prefix="/crud",
-    tags=["CRUD"]
+    product_router,
+    prefix="/products",
+    tags=["Product"]
 )
