@@ -1,12 +1,11 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Depends
 from pydantic import ValidationError
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
-
 from schemas.product_schemas import ProductCreate, ProductCreateResponse
 from models.product_models import Product
-from lib.database import SessionLocal
+from lib.database import get_db
 
 product_router = APIRouter()
 
@@ -20,10 +19,10 @@ def check_health():
         status_code=status.HTTP_201_CREATED,
         response_model = ProductCreateResponse
 )
-def add_new_products(product: ProductCreate):
-    db: Session = SessionLocal()
+def add_new_products(product: ProductCreate, db: Session = Depends(get_db)):
+    # db: Session = SessionLocal()
     try:
-        db = SessionLocal()
+        # db = SessionLocal()
         db_product = Product(**product.dict())
         db.add(db_product)
         db.commit()
