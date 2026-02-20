@@ -11,6 +11,7 @@ class Product(Base):
     product_name = Column(String(100), nullable=False)
     product_type = Column(String(100), nullable=False)
     manufactured_by = Column(String(100), nullable=False)
+    product_description = Column(String(500), nullable=True) #set to true for now
     product_price = Column(Numeric(10, 2), nullable=False)
     product_stock = Column(Integer, nullable=False)
     product_reviews = Column(Numeric(2, 1), nullable=False)

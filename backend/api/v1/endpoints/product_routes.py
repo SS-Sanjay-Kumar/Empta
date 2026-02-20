@@ -19,10 +19,11 @@ def check_health():
         status_code=status.HTTP_201_CREATED,
         response_model = ProductCreateResponse
 )
-def add_new_products(product: ProductCreate, db: Session = Depends(get_db)):
-    # db: Session = SessionLocal()
+def add_new_products(
+    product: ProductCreate, 
+    db: Session = Depends(get_db)
+):
     try:
-        # db = SessionLocal()
         db_product = Product(**product.dict())
         db.add(db_product)
         db.commit()
@@ -33,5 +34,4 @@ def add_new_products(product: ProductCreate, db: Session = Depends(get_db)):
     except SQLAlchemyError as sqla_e:
         db.rollback()
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail= f"Error with SQLAlchemy: {sqla_e}")
-    finally:
-        db.close()
+
