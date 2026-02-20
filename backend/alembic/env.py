@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from alembic import context
 import os
 
-from models.crud import Base
+from schemas.product_schemas import Base
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
