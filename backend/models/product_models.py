@@ -1,16 +1,17 @@
-from pydantic import BaseModel, condecimal, conint
+from sqlalchemy import Column, Integer, String, Numeric
+from sqlalchemy.orm import declarative_base
 
-class ProductCreate(BaseModel):
-    # id is generated in db
-    product_name: str
-    product_type: str
-    manufactured_by: str
-    product_price: condecimal(max_digits=10, decimal_places=2)
-    product_stock: conint(ge=0)
-    product_reviews: condecimal(ge=1, le=5, decimal_places=1)
+Base = declarative_base()
 
-class ProductCreateResponse(ProductCreate):
-    id: int
+class Product(Base):
 
-    class Config:
-        orm_mode: True 
+    __tablename__ = "products"
+
+    id = Column(Integer, primary_key=True, nullable=False, index=True)
+    product_name = Column(String(100), nullable=False)
+    product_type = Column(String(100), nullable=False)
+    manufactured_by = Column(String(100), nullable=False)
+    product_description = Column(String(500), nullable=True) #set to true for now
+    product_price = Column(Numeric(10, 2), nullable=False)
+    product_stock = Column(Integer, nullable=False)
+    product_reviews = Column(Numeric(2, 1), nullable=False)
