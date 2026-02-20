@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException, status, Depends
 from pydantic import ValidationError
+from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
@@ -33,5 +34,40 @@ def add_new_products(
     
     except SQLAlchemyError as sqla_e:
         db.rollback()
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail= f"Error with SQLAlchemy: {sqla_e}")
+        print("Error in add_new_products: ", sqla_e)
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail= "Error with SQLAlchemy")
 
+@product_router.get(
+        "/get-product/{product_id}",
+        status_code=status.HTTP_200_OK, 
+        response_model=ProductCreateResponse
+)
+def get_product_by_id(product_id: int, db: Session = Depends(get_db)):
+    try:
+        product = db.get(Product, product_id)
+
+        if not product:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product ID does not exist")
+
+        return product
+        
+    except SQLAlchemyError as sqla_e:
+        print("Error in add_new_products: ", sqla_e)
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail= "Error with SQLAlchemy")
+
+
+@product_router.get(
+    "/get-all-products",
+    status_code=status.HTTP_200_OK
+)
+def get_all_products(db:Session = Depends(get_db)):
+    try:
+        stmt = select(Product)
+
+        products = db.execute(stmt).scalars().all()
+
+        return products
+    
+    except SQLAlchemyError as sqla_e:
+        print("Error in add_new_products: ", sqla_e)
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail= "Error with SQLAlchemy")

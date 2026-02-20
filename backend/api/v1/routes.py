@@ -6,6 +6,6 @@ api_v1_router = APIRouter()
 
 api_v1_router.include_router(
     product_router,
-    prefix="/products",
+    prefix="/product",
     tags=["Product"]
 )
