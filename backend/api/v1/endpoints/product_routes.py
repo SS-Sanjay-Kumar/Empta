@@ -4,7 +4,11 @@ from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
-from schemas.product_schemas import ProductCreate, ProductCreateResponse
+from schemas.product_schemas import(
+    ProductCreate, 
+    ProductCreateResponse,
+    ProductUpdate
+)
 from models.product_models import Product
 from lib.database import get_db
 
@@ -12,13 +16,13 @@ product_router = APIRouter()
 
 @product_router.get("/health", status_code=status.HTTP_200_OK)
 def check_health():
-    return {"status", "ok"}
+    return {"status": "ok"}
 
 # add new products to the store
 @product_router.post(
-        "/add",
-        status_code=status.HTTP_201_CREATED,
-        response_model = ProductCreateResponse
+    "/add",
+    status_code=status.HTTP_201_CREATED,
+    response_model = ProductCreateResponse
 )
 def add_new_products(
     product: ProductCreate, 
@@ -37,10 +41,11 @@ def add_new_products(
         print("Error in add_new_products: ", sqla_e)
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail= "Error with SQLAlchemy")
 
+# get a specific product by it's id
 @product_router.get(
-        "/get-product/{product_id}",
-        status_code=status.HTTP_200_OK, 
-        response_model=ProductCreateResponse
+    "/get-product/{product_id}",
+    status_code=status.HTTP_200_OK, 
+    response_model=ProductCreateResponse
 )
 def get_product_by_id(product_id: int, db: Session = Depends(get_db)):
     try:
@@ -55,7 +60,7 @@ def get_product_by_id(product_id: int, db: Session = Depends(get_db)):
         print("Error in add_new_products: ", sqla_e)
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail= "Error with SQLAlchemy")
 
-
+# get all products
 @product_router.get(
     "/get-all-products",
     status_code=status.HTTP_200_OK
@@ -69,5 +74,33 @@ def get_all_products(db:Session = Depends(get_db)):
         return products
     
     except SQLAlchemyError as sqla_e:
+        print("Error in add_new_products: ", sqla_e)
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail= "Error with SQLAlchemy")
+
+@product_router.put(
+    "/update-product/{product_id}",
+    status_code= status.HTTP_200_OK
+    # response_model = ProductCreateResponse
+)
+def update_product(product_id: int, product: ProductUpdate, db: Session = Depends(get_db)):
+    
+    try:
+        db_product= db.get(Product, product_id)
+
+        if not db_product:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail= "Product does not exist")
+
+        dict_product = product.model_dump(exclude_unset=True)
+
+        for key, value in dict_product.items():
+            setattr(db_product, key, value)
+
+        db.commit()
+        db.refresh(db_product)
+
+        return db_product
+
+    except SQLAlchemyError as sqla_e:
+        db.rollback()
         print("Error in add_new_products: ", sqla_e)
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail= "Error with SQLAlchemy")
