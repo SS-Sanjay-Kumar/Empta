@@ -104,3 +104,25 @@ def update_product(product_id: int, product: ProductUpdate, db: Session = Depend
         db.rollback()
         print("Error in add_new_products: ", sqla_e)
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail= "Error with SQLAlchemy")
+
+@product_router.delete(
+    "/delete-product/{product_id}",
+    status_code=status.HTTP_200_OK,
+    response_model= ProductCreate
+)
+def delete_product_by_id(product_id: int ,db: Session = Depends(get_db)):
+    try:
+        delete_product = db.get(Product, product_id)
+
+        if not delete_product:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail= "Product does not exist")
+
+        db.delete(delete_product)
+        db.commit()
+
+        return delete_product
+
+    except SQLAlchemyError as sqla_e:
+        db.rollback()
+        print("Error in add_new_products: ", sqla_e)
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail= "Error with SQLAlchemy")
